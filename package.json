@@ -1,9 +1,10 @@
 {
   "name": "dr.-mansoor-khaled",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Dr. Mansoor Khalid Portfolio - Pharmacist & Software Engineer",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "build": "npm run build:css",
     "build:css": "postcss src/input.css -o dist/output.css",
     "watch:css": "postcss src/input.css -o dist/output.css --watch",
