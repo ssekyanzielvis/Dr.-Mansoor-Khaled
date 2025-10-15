@@ -53,9 +53,42 @@ npm run build:css
 npm run watch:css
 ```
 
-## 🚀 Deployment to Vercel
+### Start local server:
+```bash
+npm start
+```
+Then open http://localhost:3000 in your browser
 
-### Option 1: Deploy via Vercel Dashboard (Recommended)
+## 🚀 Deployment
+
+### Option 1: Deploy to Render (Recommended for Node.js apps)
+
+1. **Push your code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Prepare for deployment"
+   git push origin main
+   ```
+
+2. **Go to [Render Dashboard](https://dashboard.render.com/)**
+   - Sign in with GitHub
+
+3. **Create New Web Service**
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository: `Dr.-Mansoor-Khaled`
+
+4. **Configure your service**
+   - Name: `dr-mansoor-portfolio`
+   - Environment: **Node**
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm start`
+   - Plan: **Free**
+
+5. **Click "Create Web Service"**
+   - Render will build and deploy automatically
+   - You'll get a URL like: `https://dr-mansoor-portfolio.onrender.com`
+
+### Option 2: Deploy to Vercel (For static hosting)
 
 1. **Push your code to GitHub** (if not already done)
    ```bash
