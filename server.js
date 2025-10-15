@@ -22,9 +22,9 @@ const server = http.createServer((req, res) => {
     
     // Default to index.html
     if (filePath === './') {
-        filePath = './DrMansoorPortifolio.html';
-    } else if (filePath === './index.html' || filePath === './index') {
-        filePath = './DrMansoorPortifolio.html';
+        filePath = './index.html';
+    } else if (filePath === './DrMansoorPortifolio.html') {
+        filePath = './index.html';
     }
 
     const extname = String(path.extname(filePath)).toLowerCase();
@@ -34,7 +34,7 @@ const server = http.createServer((req, res) => {
         if (error) {
             if (error.code === 'ENOENT') {
                 // If file not found, serve the main HTML file (for SPA routing)
-                fs.readFile('./DrMansoorPortifolio.html', (err, data) => {
+                fs.readFile('./index.html', (err, data) => {
                     if (err) {
                         res.writeHead(500);
                         res.end('Error loading page');
@@ -56,5 +56,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
-    console.log(`Serving DrMansoorPortifolio.html`);
+    console.log(`Serving index.html`);
 });
