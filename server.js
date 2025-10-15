@@ -1,4 +1,4 @@
-# Simple HTTP server for static site
+// Simple HTTP server for static site
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
