@@ -1426,6 +1426,7 @@
         @media (max-width: 768px) {
             .mobile-menu {
                 display: block;
+                color: var(--text);
             }
             
             nav ul {
@@ -1434,13 +1435,14 @@
                 left: -100%;
                 width: 100%;
                 height: calc(100vh - 80px);
-                background: white;
+                background: var(--card-bg);
                 flex-direction: column;
                 align-items: center;
                 padding-top: 50px;
-                transition: left 0.3s ease;
+                transition: left 0.3s ease, background-color 0.3s ease;
                 overflow-y: auto;
                 z-index: 999;
+                box-shadow: var(--shadow);
             }
             
             nav ul.active {
@@ -1451,6 +1453,13 @@
                 margin: 15px 0;
                 width: 100%;
                 text-align: center;
+            }
+
+            nav ul li a {
+                color: var(--text);
+                font-size: 1.1rem;
+                padding: 10px 20px;
+                display: block;
             }
             
             .hero {
@@ -2461,12 +2470,20 @@
                 </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2023 Dr. Mansoor Khalid | Quantum Innovations, Inc. All Rights Reserved.</p>
+                <p>&copy; <span id="currentYear"></span>2025</span> Dr. Mansoor Khalid | Quantum Innovations, Inc. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
 
     <script>
+        // Set dynamic copyright year
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSpan = document.getElementById('currentYear');
+            if (yearSpan) {
+                yearSpan.textContent = new Date().getFullYear();
+            }
+        });
+
         // Dark Mode Toggle
         const themeToggle = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
