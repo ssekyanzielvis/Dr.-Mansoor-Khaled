@@ -231,6 +231,38 @@
             transition: transform 0.3s ease;
         }
 
+        /* PDF Download Button */
+        .pdf-download {
+            background: var(--accent);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .pdf-download:hover {
+            background: #c0392b;
+            border-color: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .pdf-download:active {
+            transform: scale(0.95);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+        }
+
         .mobile-menu {
             display: none;
             font-size: 1.5rem;
@@ -1875,6 +1907,8 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- html2pdf.js Library for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <!-- Page Loader -->
@@ -1894,6 +1928,9 @@
             <div class="header-actions">
                 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
                     <i class="fas fa-moon"></i>
+                </button>
+                <button id="pdf-download" class="pdf-download" aria-label="Download as PDF">
+                    <i class="fas fa-file-pdf"></i>
                 </button>
                 <div class="mobile-menu">
                     <i class="fas fa-bars"></i>
@@ -2944,6 +2981,85 @@
                         document.body.style.overflow = '';
                     }
                 });
+            });
+        });
+
+        // ===== PDF DOWNLOAD FUNCTIONALITY =====
+        document.getElementById('pdf-download').addEventListener('click', function() {
+            // Show loading indicator
+            const pdfButton = this;
+            const originalHTML = pdfButton.innerHTML;
+            pdfButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            pdfButton.disabled = true;
+
+            // Hide elements that shouldn't appear in PDF
+            const elementsToHide = [
+                document.querySelector('.theme-toggle'),
+                document.querySelector('.pdf-download'),
+                document.querySelector('.mobile-menu'),
+                document.querySelector('.floating-btn'),
+                document.querySelectorAll('.modal')
+            ];
+
+            // Store original display values
+            const originalDisplayValues = [];
+            elementsToHide.forEach(element => {
+                if (element) {
+                    if (element instanceof NodeList) {
+                        element.forEach(el => {
+                            originalDisplayValues.push({ element: el, display: el.style.display });
+                            el.style.display = 'none';
+                        });
+                    } else {
+                        originalDisplayValues.push({ element: element, display: element.style.display });
+                        element.style.display = 'none';
+                    }
+                }
+            });
+
+            // Configure PDF options
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'Dr-Mansoor-Khalid-Portfolio.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                },
+                pagebreak: { 
+                    mode: ['avoid-all', 'css', 'legacy'] 
+                }
+            };
+
+            // Generate PDF
+            html2pdf().set(opt).from(document.body).save().then(() => {
+                // Restore hidden elements
+                originalDisplayValues.forEach(({ element, display }) => {
+                    element.style.display = display;
+                });
+
+                // Restore button state
+                pdfButton.innerHTML = originalHTML;
+                pdfButton.disabled = false;
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                alert('There was an error generating the PDF. Please try again.');
+                
+                // Restore hidden elements
+                originalDisplayValues.forEach(({ element, display }) => {
+                    element.style.display = display;
+                });
+
+                // Restore button state
+                pdfButton.innerHTML = originalHTML;
+                pdfButton.disabled = false;
             });
         });
     </script>
