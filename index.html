@@ -1249,6 +1249,36 @@
             transform: translateY(0);
         }
 
+        /* PDF export overrides */
+        body.pdf-export * {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        body.pdf-export header {
+            position: static !important;
+            box-shadow: none !important;
+        }
+
+        body.pdf-export .scroll-reveal,
+        body.pdf-export .content-loader,
+        body.pdf-export .stagger-animation,
+        body.pdf-export .pharmacy-card,
+        body.pdf-export .software-card,
+        body.pdf-export .project-card,
+        body.pdf-export .vision-card,
+        body.pdf-export .mission-card,
+        body.pdf-export .purpose-card,
+        body.pdf-export .value-item {
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        body.pdf-export .hero {
+            transform: none !important;
+            background-attachment: scroll !important;
+        }
+
         /* Lazy Loading Image Placeholder */
         img[data-src] {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -2985,83 +3015,149 @@
         });
 
         // ===== PDF DOWNLOAD FUNCTIONALITY =====
-        document.getElementById('pdf-download').addEventListener('click', function() {
-            // Show loading indicator
-            const pdfButton = this;
-            const originalHTML = pdfButton.innerHTML;
-            pdfButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            pdfButton.disabled = true;
+        function prepareDocumentForPDF() {
+            const cleanupSteps = [];
+            const previousScrollY = window.pageYOffset;
+            window.scrollTo(0, 0);
+            cleanupSteps.push(() => window.scrollTo(0, previousScrollY));
 
-            // Hide elements that shouldn't appear in PDF
-            const elementsToHide = [
-                document.querySelector('.theme-toggle'),
-                document.querySelector('.pdf-download'),
-                document.querySelector('.mobile-menu'),
-                document.querySelector('.floating-btn'),
-                document.querySelectorAll('.modal')
-            ];
+            const body = document.body;
+            body.classList.add('pdf-export');
+            cleanupSteps.push(() => body.classList.remove('pdf-export'));
 
-            // Store original display values
-            const originalDisplayValues = [];
-            elementsToHide.forEach(element => {
-                if (element) {
-                    if (element instanceof NodeList) {
-                        element.forEach(el => {
-                            originalDisplayValues.push({ element: el, display: el.style.display });
-                            el.style.display = 'none';
-                        });
-                    } else {
-                        originalDisplayValues.push({ element: element, display: element.style.display });
-                        element.style.display = 'none';
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                const previousTransform = hero.style.transform;
+                cleanupSteps.push(() => { hero.style.transform = previousTransform; });
+                hero.style.transform = 'none';
+            }
+
+            const header = document.getElementById('header');
+            if (header) {
+                const previousPosition = header.style.position;
+                const previousBoxShadow = header.style.boxShadow;
+                cleanupSteps.push(() => {
+                    header.style.position = previousPosition;
+                    header.style.boxShadow = previousBoxShadow;
+                });
+                header.style.position = 'static';
+                header.style.boxShadow = 'none';
+            }
+
+            const loader = document.getElementById('pageLoader');
+            if (loader) {
+                const previousDisplay = loader.style.display;
+                cleanupSteps.push(() => { loader.style.display = previousDisplay; });
+                loader.style.display = 'none';
+            }
+
+            const activatedSections = [];
+            document.querySelectorAll('.scroll-reveal').forEach(section => {
+                if (!section.classList.contains('active')) {
+                    section.classList.add('active');
+                    activatedSections.push(section);
+                }
+            });
+            cleanupSteps.push(() => {
+                activatedSections.forEach(section => section.classList.remove('active'));
+            });
+
+            const loadedElements = [];
+            document.querySelectorAll('.content-loader').forEach(el => {
+                if (!el.classList.contains('loaded')) {
+                    el.classList.add('loaded');
+                    loadedElements.push(el);
+                }
+            });
+            cleanupSteps.push(() => {
+                loadedElements.forEach(el => el.classList.remove('loaded'));
+            });
+
+            return () => {
+                while (cleanupSteps.length) {
+                    const step = cleanupSteps.pop();
+                    if (typeof step === 'function') {
+                        step();
                     }
                 }
-            });
-
-            // Configure PDF options
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: 'Dr-Mansoor-Khalid-Portfolio.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    letterRendering: true
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait' 
-                },
-                pagebreak: { 
-                    mode: ['avoid-all', 'css', 'legacy'] 
-                }
             };
+        }
 
-            // Generate PDF
-            html2pdf().set(opt).from(document.body).save().then(() => {
-                // Restore hidden elements
-                originalDisplayValues.forEach(({ element, display }) => {
-                    element.style.display = display;
+        const pdfDownloadButton = document.getElementById('pdf-download');
+        if (pdfDownloadButton) {
+            pdfDownloadButton.addEventListener('click', function() {
+                const pdfButton = this;
+                const originalHTML = pdfButton.innerHTML;
+                pdfButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                pdfButton.disabled = true;
+
+                const cleanupAfterPDF = prepareDocumentForPDF();
+
+                const elementsToHide = [
+                    document.querySelector('.theme-toggle'),
+                    document.querySelector('.pdf-download'),
+                    document.querySelector('.mobile-menu'),
+                    document.querySelector('.floating-btn'),
+                    document.querySelectorAll('.modal')
+                ];
+
+                const originalDisplayValues = [];
+                elementsToHide.forEach(element => {
+                    if (element) {
+                        if (element instanceof NodeList) {
+                            element.forEach(el => {
+                                originalDisplayValues.push({ element: el, display: el.style.display });
+                                el.style.display = 'none';
+                            });
+                        } else {
+                            originalDisplayValues.push({ element: element, display: element.style.display });
+                            element.style.display = 'none';
+                        }
+                    }
                 });
 
-                // Restore button state
-                pdfButton.innerHTML = originalHTML;
-                pdfButton.disabled = false;
-            }).catch(error => {
-                console.error('Error generating PDF:', error);
-                alert('There was an error generating the PDF. Please try again.');
-                
-                // Restore hidden elements
-                originalDisplayValues.forEach(({ element, display }) => {
-                    element.style.display = display;
-                });
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: 'Dr-Mansoor-Khalid-Portfolio.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        letterRendering: true,
+                        backgroundColor: '#ffffff',
+                        windowWidth: document.documentElement.scrollWidth,
+                        windowHeight: document.documentElement.scrollHeight
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait'
+                    },
+                    pagebreak: {
+                        mode: ['avoid-all', 'css', 'legacy']
+                    }
+                };
 
-                // Restore button state
-                pdfButton.innerHTML = originalHTML;
-                pdfButton.disabled = false;
+                html2pdf().set(opt).from(document.body).save().then(() => {
+                    cleanupAfterPDF();
+                    originalDisplayValues.forEach(({ element, display }) => {
+                        element.style.display = display;
+                    });
+                    pdfButton.innerHTML = originalHTML;
+                    pdfButton.disabled = false;
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    alert('There was an error generating the PDF. Please try again.');
+                    cleanupAfterPDF();
+                    originalDisplayValues.forEach(({ element, display }) => {
+                        element.style.display = display;
+                    });
+                    pdfButton.innerHTML = originalHTML;
+                    pdfButton.disabled = false;
+                });
             });
-        });
+        }
     </script>
 
     <!-- Floating Action Button -->
